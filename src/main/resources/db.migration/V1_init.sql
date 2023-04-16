@@ -1,0 +1,6 @@
+--CREATE TABLE IF NOT EXISTS todolist_two(
+--    id BIGINT PRIMARY KEY IDENTITY,
+--    task VARCHAR(45) NOT NULL,
+--    done BOOLEAN,
+--    UNIQUE (task)
+--);
