@@ -13,6 +13,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -41,7 +43,6 @@ public class TaskUseCaseImpl implements TaskUseCase {
     @Override
     public GetTaskModelListResponseDto getTasks() {
         log.info("Iniciando busca por todas as tasks");
-
         List<TaskModel> taskModelList = taskModelRepository.findAll();
 
         return GetTaskModelListResponseDto
@@ -56,20 +57,29 @@ public class TaskUseCaseImpl implements TaskUseCase {
             log.error("A task '{}' já existe!", task);
             throw new RequestGenericException("401", "Conflict", "A task já existe", 401);
         }
+        try {
+            log.info("Enviando uma nova task");
+            TaskModel createTask = TaskModel
+                    .builder()
+                    .task(task)
+                    .done(false)
+                    .build();
 
-        log.info("Enviando uma nova task");
-        TaskModel createTask = TaskModel
-                .builder()
-                .task(task)
-                .done(false)
-                .build();
+            taskModelRepository.save(createTask);
+            return createTask.getId();
 
-        taskModelRepository.save(createTask);
-        return createTask.getId();
+        } catch (Exception e) {
+            throw new RequestGenericException("400", "Erro ao enviar task", "Erro inesperado aconteceu, tente novamente", 400);
+        }
     }
 
     @Override
     public boolean updateTask(UpdateTaskRequestDto updateTaskRequestDto) throws SQLException {
+        taskModelRepository.findById(updateTaskRequestDto.getId()).orElseThrow(() -> {
+            log.error("O id da task não existe!");
+            return new RequestGenericException("404", "Not Found", "O id da task não foi encontrado", 404);
+        });
+
         MapSqlParameterSource namedParameters = new MapSqlParameterSource();
         namedParameters.addValue("task", updateTaskRequestDto.getTask());
         namedParameters.addValue("done", updateTaskRequestDto.getDone());
@@ -85,7 +95,7 @@ public class TaskUseCaseImpl implements TaskUseCase {
     public boolean deleteTask(Long id) {
         taskModelRepository.findById(id).orElseThrow(() -> {
             log.error("Error ao deletar task, Id não encontrado!");
-            throw new RequestGenericException("404", "Error ao deletar task", "Id da task não encontrado!", 404);
+            return new RequestGenericException("404", "Error ao deletar task", "Id da task não encontrado!", 404);
         });
 
         try {
@@ -105,6 +115,5 @@ public class TaskUseCaseImpl implements TaskUseCase {
 
         return taskModel != null;
     }
-
 
 }
