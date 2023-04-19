@@ -25,5 +25,5 @@ public class TaskModel implements Serializable {
     private String task;
 
     @Column(name = "done")
-    private boolean done;
+    private Boolean done;
 }
