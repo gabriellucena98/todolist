@@ -1,11 +1,11 @@
 package com.GB.todolist.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Data
@@ -26,4 +26,8 @@ public class TaskModel implements Serializable {
 
     @Column(name = "done")
     private Boolean done;
+
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "id_user"), columnDefinition = "id")
+    private UserModel userModel;
 }
